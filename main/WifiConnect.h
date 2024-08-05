@@ -28,6 +28,11 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
+
+#define SSID_FISITRON "TendaBarcodeWiFi" //"Fisitron Wireless "//"VodafoneFisitronING"
+#define PSW_FISITRON  "barcodeReader" //"055319282055" //"Fisitron319086"
+
+
 esp_err_t fisi_example_connect(void);
 
 

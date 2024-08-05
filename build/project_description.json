@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "BarcodeRaeder",
-    "project_version":    "1",
+    "project_version":    "d4597d8-dirty",
     "project_path":       "C:/PROGETTI/BarcodeReader_Reader",
     "idf_path":           "C:/Espressif/esp-idf-v4.4.7",
     "build_dir":          "C:/PROGETTI/BarcodeReader_Reader/build",

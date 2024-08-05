@@ -26,6 +26,7 @@
 #include "freertos/event_groups.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "WifiConnect.h"
 
 
 bool wifi_connect = false;
@@ -301,8 +302,8 @@ static esp_netif_t *wifi_start(void)
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = "VodafoneFisitronING", //"Tenda_46DEA0",//CONFIG_EXAMPLE_WIFI_SSID,
-            .password = "Fisitron319086",//CONFIG_EXAMPLE_WIFI_PASSWORD,
+            .ssid = SSID_FISITRON, //"Tenda_46DEA0",//CONFIG_EXAMPLE_WIFI_SSID,
+            .password = PSW_FISITRON,//CONFIG_EXAMPLE_WIFI_PASSWORD,
             .scan_method = EXAMPLE_WIFI_SCAN_METHOD,
             .sort_method = EXAMPLE_WIFI_CONNECT_AP_SORT_METHOD,
             .threshold.rssi = CONFIG_EXAMPLE_WIFI_SCAN_RSSI_THRESHOLD,

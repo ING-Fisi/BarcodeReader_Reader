@@ -161,9 +161,9 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 
 		if(strncmp(stringResp,"0xQRENABLED",data_len)==0){
 			ESP_LOGI(TAG, "QR CODE ENABLED");
-			gpio_set_level(GPIO_OUTPUT_IO_0, false);
-			vTaskDelay(1000 / portTICK_PERIOD_MS);
 			gpio_set_level(GPIO_OUTPUT_IO_0, true);
+			vTaskDelay(2000 / portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_OUTPUT_IO_0, false);
 		}
 
 		if(strncmp(stringResp,"0xQRDISABLED",data_len)==0){
@@ -340,7 +340,7 @@ void app_main(void)
 	gpio_config(&io_conf);
 
 
-	gpio_set_level(GPIO_OUTPUT_IO_0, true);
+	gpio_set_level(GPIO_OUTPUT_IO_0, false);
 
 
 
