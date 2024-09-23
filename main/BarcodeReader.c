@@ -35,8 +35,13 @@
 #endif
 
 #include "esp_http_client.h"
+#include "esp_timer.h"
 
 void http_rest_with_url(void);
+void http_send_sync(void);
+
+
+bool tx_busy = false;
 
 #define GOOGLE_SNTP "time.google.com"
 #define DEFAULT_SNTP_SERVER GOOGLE_SNTP // Select one of the previous servers
@@ -46,7 +51,7 @@ void http_rest_with_url(void);
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 static const char *TAG = "HTTP_CLIENT";
 
-#define CONFIG_EXAMPLE_HTTP_ENDPOINT "192.168.1.100:8080"
+#define CONFIG_EXAMPLE_HTTP_ENDPOINT "192.168.0.100:8080"
 
 
 static const int RX_BUF_SIZE = 1024;
@@ -58,9 +63,22 @@ uint8_t* data;
 size_t length=0;
 
 
+
+
 //************************* RELE ******************************//
 #define GPIO_OUTPUT_IO_0    18
 #define GPIO_OUTPUT_PIN_SEL  (1ULL<<GPIO_OUTPUT_IO_0)
+
+
+#define GPIO_INPUT_IO_0     19
+#define GPIO_INPUT_PIN_SEL  (1ULL<<GPIO_INPUT_IO_0)
+#define ESP_INTR_FLAG_DEFAULT 0
+
+
+#define DOOR_OPEN 1
+#define DOOR_CLOSE 0
+
+int door_status = DOOR_CLOSE;
 
 
 
@@ -97,14 +115,16 @@ int sendData(const char* logName, const char* data)
 	return txBytes;
 }
 
-static void tx_task(void *arg)
+
+static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
-	static const char *TX_TASK_TAG = "TX_TASK";
-	esp_log_level_set(TX_TASK_TAG, ESP_LOG_INFO);
-	while (1) {
-		sendData(TX_TASK_TAG, "Hello world");
-		vTaskDelay(2000 / portTICK_PERIOD_MS);
-	}
+	uint32_t gpio_num = (uint32_t) arg;
+
+}
+
+void timer_callback(void *param)
+{
+	tx_busy = false;
 }
 
 static void rx_task(void *arg)
@@ -113,6 +133,7 @@ static void rx_task(void *arg)
 	esp_log_level_set(RX_TASK_TAG, ESP_LOG_INFO);
 	data = (uint8_t*) malloc(RX_BUF_SIZE+1); //data = (uint8_t*) malloc(RX_BUF_SIZE+1); //uint8_t* data = (uint8_t*) malloc(RX_BUF_SIZE+1);
 	while (1) {
+
 		const int rxBytes = uart_read_bytes(UART_NUM_2, data, RX_BUF_SIZE, 1000 / portTICK_RATE_MS);
 		if (rxBytes > 0) {
 			data[rxBytes] = 0;
@@ -123,9 +144,23 @@ static void rx_task(void *arg)
 
 			http_rest_with_url();
 		}
+		else
+		{
+			if(tx_busy == false)
+			{
+				tx_busy = true;
+				http_send_sync();
+			}
+
+		}
+
+		//vTaskDelay(10/portTICK_PERIOD_MS);
+
 	}
 	free(data);
 }
+
+
 
 char stringResp[100];
 
@@ -169,46 +204,6 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 		if(strncmp(stringResp,"0xQRDISABLED",data_len)==0){
 			ESP_LOGI(TAG, "QR CODE DISABLED");
 		}
-
-
-
-
-		// Clean the buffer in case of a new request
-		//            if (output_len == 0 && evt->user_data) {
-		//                // we are just starting to copy the output data into the use
-		//                memset(evt->user_data, 0, MAX_HTTP_OUTPUT_BUFFER);
-		//            }
-		//            /*
-		//             *  Check for chunked encoding is added as the URL for chunked encoding used in this example returns binary data.
-		//             *  However, event handler can also be used in case chunked encoding is used.
-		//             */
-		//            if (!esp_http_client_is_chunked_response(evt->client)) {
-		//                // If user_data buffer is configured, copy the response into the buffer
-		//                int copy_len = 0;
-		//                if (evt->user_data) {
-		//                    // The last byte in evt->user_data is kept for the NULL character in case of out-of-bound access.
-		//                    copy_len = MIN(evt->data_len, (MAX_HTTP_OUTPUT_BUFFER - output_len));
-		//                    if (copy_len) {
-		//                        memcpy(evt->user_data + output_len, evt->data, copy_len);
-		//                    }
-		//                } else {
-		//                    int content_len = esp_http_client_get_content_length(evt->client);
-		//                    if (output_buffer == NULL) {
-		//                        // We initialize output_buffer with 0 because it is used by strlen() and similar functions therefore should be null terminated.
-		//                        output_buffer = (char *) calloc(content_len + 1, sizeof(char));
-		//                        output_len = 0;
-		//                        if (output_buffer == NULL) {
-		//                            ESP_LOGE(TAG, "Failed to allocate memory for output buffer");
-		//                            return ESP_FAIL;
-		//                        }
-		//                    }
-		//                    copy_len = MIN(evt->data_len, (content_len - output_len));
-		//                    if (copy_len) {
-		//                        memcpy(output_buffer + output_len, evt->data, copy_len);
-		//                    }
-		//                }
-		//                output_len += copy_len;
-		//            }
 
 		break;
 	case HTTP_EVENT_ON_FINISH:
@@ -310,6 +305,78 @@ void http_rest_with_url(void)
 }
 
 
+void http_send_sync(void)
+{
+	// Declare local_response_buffer with size (MAX_HTTP_OUTPUT_BUFFER + 1) to prevent out of bound access when
+	// it is used by functions like strlen(). The buffer should only be used upto size MAX_HTTP_OUTPUT_BUFFER
+	char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER + 1] = {0};
+	/**
+	 * NOTE: All the configuration parameters for http_client must be spefied either in URL or as host and path parameters.
+	 * If host and path parameters are not set, query parameter will be ignored. In such cases,
+	 * query parameter should be specified in URL.
+	 *
+	 * If URL as well as host and path parameters are specified, values of host and path will be considered.
+	 */
+	esp_http_client_config_t config = {
+			.host = CONFIG_EXAMPLE_HTTP_ENDPOINT,
+			.path = "/get",
+			.query = "esp",
+			.event_handler = _http_event_handler,
+			.user_data = local_response_buffer,        // Pass address of local buffer to get response
+			.disable_auto_redirect = true,
+	};
+	esp_http_client_handle_t client = esp_http_client_init(&config);
+
+
+	get_mac_str(macstr);
+
+	// POST
+	const char *post_data = "{\"field1\":\"value1\"}";
+
+	char* str1="http://"CONFIG_EXAMPLE_HTTP_ENDPOINT"/";
+	char* str2="SYNC";
+	char* macadd = macstr;
+
+	size_t len = strlen(str1) + strlen(str2) + 1 + 1 + 1 + strlen(macadd) + 1;
+	const char* result = (char*)malloc(len);
+
+	strcpy(result,str1);
+	strcat(result,str2);
+	strcat(result,"_");
+
+	door_status = gpio_get_level(GPIO_INPUT_IO_0);
+
+	if(door_status == DOOR_OPEN)
+	{
+		strcat(result,"0");
+	}
+	else
+	{
+		strcat(result,"1");
+	}
+
+	strcat(result,"_");
+	strcat(result,macadd);
+
+
+	esp_http_client_set_url(client, result);
+	esp_http_client_set_method(client, HTTP_METHOD_POST);
+	esp_http_client_set_header(client, "Content-Type", "application/json");
+	esp_http_client_set_post_field(client, post_data, strlen(post_data));
+	esp_err_t err = esp_http_client_perform(client);
+	if (err == ESP_OK) {
+		ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %d",
+				esp_http_client_get_status_code(client),
+				esp_http_client_get_content_length(client));
+	} else {
+		ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+	}
+
+
+	esp_http_client_cleanup(client);
+}
+
+
 void app_main(void)
 {
 
@@ -340,7 +407,39 @@ void app_main(void)
 	gpio_config(&io_conf);
 
 
+	//interrupt of rising edge
+	io_conf.intr_type = GPIO_INTR_DISABLE;
+	//bit mask of the pins, use GPIO4/5 here
+	io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
+	//set as input mode
+	io_conf.mode = GPIO_MODE_INPUT;
+	//enable pull-up mode
+	io_conf.pull_up_en = 1;
+
+	gpio_config(&io_conf);
+
+	//	//change gpio intrrupt type for one pin
+	//	gpio_set_intr_type(GPIO_INPUT_IO_0, GPIO_INTR_ANYEDGE);
+	//
+	//	//install gpio isr service
+	//	gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+	//	//hook isr handler for specific gpio pin
+	//	gpio_isr_handler_add(GPIO_INPUT_IO_0, gpio_isr_handler, (void*) GPIO_INPUT_IO_0);
+
+
+
+	door_status = gpio_get_level(GPIO_INPUT_IO_0);
+
+
 	gpio_set_level(GPIO_OUTPUT_IO_0, false);
+
+
+	const esp_timer_create_args_t my_timer_args = {
+			.callback = &timer_callback,
+			.name = "My Timer"};
+	esp_timer_handle_t timer_handler;
+	ESP_ERROR_CHECK(esp_timer_create(&my_timer_args, &timer_handler));
+	ESP_ERROR_CHECK(esp_timer_start_periodic(timer_handler, 1000000));
 
 
 
@@ -369,22 +468,22 @@ void app_main(void)
 
 	//*************************************************************************//
 
-//	bool toggle = false;
-//	while(1) {
-//		vTaskDelay(1000 / portTICK_RATE_MS);
-//
-//		if(toggle == false)
-//		{
-//			toggle = true;
-//		}
-//		else
-//		{
-//			toggle = false;
-//		}
-//
-//
-//
-//	}
+	//	bool toggle = false;
+	//	while(1) {
+	//		vTaskDelay(1000 / portTICK_RATE_MS);
+	//
+	//		if(toggle == false)
+	//		{
+	//			toggle = true;
+	//		}
+	//		else
+	//		{
+	//			toggle = false;
+	//		}
+	//
+	//
+	//
+	//	}
 
 
 
@@ -393,5 +492,4 @@ void app_main(void)
 
 	init();
 	xTaskCreate(rx_task, "uart_rx_task", 4096*2, NULL, configMAX_PRIORITIES, NULL);
-	//xTaskCreate(tx_task, "uart_tx_task", 1024*2, NULL, configMAX_PRIORITIES-1, NULL);
 }
