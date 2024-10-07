@@ -4,16 +4,16 @@
 cmake_minimum_required(VERSION 3.5)
 
 file(MAKE_DIRECTORY
-  "C:/ESPRESSIF/esp-idf-v4.4.7/components/bootloader/subproject"
-  "C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader"
-  "C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix"
-  "C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/tmp"
-  "C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp"
-  "C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src"
-  "C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp"
+  "C:/Espressif/esp-idf-v4.4.7/components/bootloader/subproject"
+  "C:/PROGETTI/BarcodeReader_Reader/build/bootloader"
+  "C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix"
+  "C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/tmp"
+  "C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp"
+  "C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src"
+  "C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()

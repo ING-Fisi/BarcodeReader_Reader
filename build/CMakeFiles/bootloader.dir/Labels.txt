@@ -1,13 +1,13 @@
 # Target labels
  bootloader
 # Source files and their labels
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/CMakeFiles/bootloader
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/CMakeFiles/bootloader.rule
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/CMakeFiles/bootloader-complete.rule
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
-C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+C:/PROGETTI/BarcodeReader_Reader/build/CMakeFiles/bootloader
+C:/PROGETTI/BarcodeReader_Reader/build/CMakeFiles/bootloader.rule
+C:/PROGETTI/BarcodeReader_Reader/build/CMakeFiles/bootloader-complete.rule
+C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+C:/PROGETTI/BarcodeReader_Reader/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

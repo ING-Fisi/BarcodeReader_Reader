@@ -70,7 +70,7 @@ size_t length=0;
 #define GPIO_OUTPUT_PIN_SEL  (1ULL<<GPIO_OUTPUT_IO_0)
 
 
-#define GPIO_INPUT_IO_0     19
+#define GPIO_INPUT_IO_0     21
 #define GPIO_INPUT_PIN_SEL  (1ULL<<GPIO_INPUT_IO_0)
 #define ESP_INTR_FLAG_DEFAULT 0
 
@@ -457,14 +457,14 @@ void app_main(void)
 	ESP_ERROR_CHECK(fisi_example_connect());
 
 	//***************************************************************************//
-	while (1) {
-		if ( sntp_init_time( DEFAULT_SNTP_SERVER, 20) != 0 ) { // UNIFI_SNTP
-			//ESP_LOGW(TAG,"fail obtaining time from specified SNTP server.");
-		}
-		else {
-			break;
-		}
-	}
+//	while (1) {
+//		if ( sntp_init_time( DEFAULT_SNTP_SERVER, 20) != 0 ) { // UNIFI_SNTP
+//			//ESP_LOGW(TAG,"fail obtaining time from specified SNTP server.");
+//		}
+//		else {
+//			break;
+//		}
+//	}
 
 	//*************************************************************************//
 

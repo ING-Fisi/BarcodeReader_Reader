@@ -1,4 +1,4 @@
-/* * Data converted from C:/Users/clott/PROGETTI/BarcodeReader_Reader/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from C:/PROGETTI/BarcodeReader_Reader/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded
